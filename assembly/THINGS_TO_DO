@@ -1,0 +1,22 @@
+You should do below things before and after, if required, running  this pipeline:
+
+1-
+check if the data provided is in file format or is in symbolink format.
+
+2-
+Check read lengths of your data. Some or the other will break as coverage python script has threshold 
+until 150 bp.
+
+3-
+Provide correct MLST SRST2 file in automate shell script. If they're incorrect Sequence typing using 
+SRST2 shall be skipped.
+
+4-
+Check forward and reverse suffix before running assembly pipeline.
+
+5-
+Do a try run to ensure things WOULD be OK.
+
+6-
+Make sure info_cov files are as the total number of isolates provided.
+Else run find_missing_coverage.sh
