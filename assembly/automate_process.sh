@@ -4,31 +4,28 @@
 # __author__ Sanjeev Sariya
 # __location__ Price Lab 4th Fl, New Hampshire, Cube# 420F
 
-#SBATCH --time=4-0:0:0  # - time to run 
+#SBATCH --time=7-0:0:0  # - time to run          #changed on May 17 from 4 to 7 
 #SBATCH -o "main_automate.%j.out"  # output 
 #SBATCH -J spades_trimmo # job name 
 #SBATCH  -p 128gb # partition to run 
-#SBATCH  --nodes=2 # number of nodes -- 
+#SBATCH  --nodes=1 # number of nodes -- 
 #SBATCH -e "log_automate.%j.stderr"  # error log name 
 
 # This script is called in from assembly_pipeline.sh 
 # All sanity checks have already been performed in there. 
 # We here do: assembly, sequencing typing using SRST (trimmomatic reads) and blast Sequence typing.
-# Make sure you provide correct files for MLST SRST database. And change thier path in perform_srst function. 
-#
+# Make sure you provide correct files for MLST SRST database. And change their path in perform_srst function. 
 
 # ------       ------          ------                          ------           ------     ------   ------             ------ 
 
 module load python2.7 samtools/0.1.18 bowtie2/2.2.3
 
 perform_srst(){ # function begins for doing SRST Sequence typing .. 
-# $1 is dir of trimmed reads 
-# $2 forward trimmed reads 
-# $3 reverse trimmed reads 
+# $1 is dir of trimmed reads # $2 forward trimmed reads  # $3 reverse trimmed reads 
     
     delim='-'
-    mlst_db="Escherichia_coli#1" # do not add fasta to it. PLEASE
-    mlst_def="ecoli.txt"
+    mlst_db="Staphylococcus_aureus" # do not add fasta to it. PLEASE
+    mlst_def="saureus.txt"
 
     if [ ! -f $mlst_db".fasta" ] || [ ! -f $mlst_def ] # checks in current directory
     then
@@ -62,9 +59,7 @@ perform_srst(){ # function begins for doing SRST Sequence typing ..
     rev_suff=${temp_rev:$index_read:$index_fastq-$index_read} # get reverse suffix
 
     set -x
-    printf "\nThings went well for $isolate forward suff is $for_suff reverse suff is $rev_suff. \n "  >> `pwd`/logs_srst.txt
-
-#    job_id=$(sbatch -p 128gb --nodes=1 -J $i --time 12:0:0 -o "%j_srst.out" -e "%j_srst.stderr" ~/srst2-master/scripts/srst2.py --input_pe $temp_for $temp_rev --forward $for_suff --reverse $rev_suff --output $isolate  --save_scores --mlst_db $mlst_db".fasta" --mlst_definitions $mlst_def --mlst_delimiter $delim | awk '{print $4}' )
+    printf "\nThings went well for $isolate forward suff is $for_suff reverse suff is $rev_suff.\n"  >> `pwd`/logs_srst.txt
  
     ~/srst2-master/scripts/srst2.py --input_pe $temp_for $temp_rev --forward $for_suff --reverse $rev_suff --output $isolate  --log --save_scores --mlst_db $mlst_db".fasta" --mlst_definitions $mlst_def --mlst_delimiter $delim  
 
@@ -82,37 +77,63 @@ perform_srst(){ # function begins for doing SRST Sequence typing ..
 perform_assembly(){
 
 #-- run spades--
-# it runs mismatch corrector with --careful flag <which is recommended>
-# Default gzip output      
-# Default runs bayes_hammer for read correction and assembler 
+# it runs mismatch corrector with --careful flag <which is recommended> # Default gzip output # Default runs bayes_hammer for read correction and assembler 
 
     set -x
-
     printf "We are going to run SPAdes with cut_off $cut_off \n"
 
     python /c1/apps/spades/SPAdes-3.5.0-Linux/bin/spades.py -t $num_threads --cov-cutoff $cut_off --careful -1 $out_dir/"out_paired_"$temp_forw_read -2 $out_dir/"out_paired_"$temp_rev_read -o $out_dir 
 
-    printf "we are going to run QUAST with contigs files\n"
-    #run quast for contigs first
+    if [ -f $out_dir/"contigs.fasta" ] # if contigs.fasta exists
+    then
+	printf "Run QUAST on contigs files\n"
+	mkdir $out_dir/"contigs_quast"
+	python /c1/apps/quast/quast-2.3/quast.py --threads $num_threads $out_dir/"contigs.fasta" -o $out_dir/"contigs_quast"
+	printf "Done quality check for contigs using Quast\n"
 
-    mkdir $out_dir/"contigs_quast"
-    python /c1/apps/quast/quast-2.3/quast.py --threads $num_threads $out_dir/"contigs.fasta" -o $out_dir/"contigs_quast"
+    else
+	printf "No Contigs file was generated\n"
+    fi
 
-    printf "we are going to run Quast with scaffolds file\n"
-    #run Quast for scaffolds then
+    if [ -f $out_dir/"scaffolds.fasta" ] # if scaffolds.fasta exists
+    then 
+	printf "Run Quast on scaffolds file\n"
+	mkdir $out_dir/"scaffolds_quast"
+	python /c1/apps/quast/quast-2.3/quast.py --threads $num_threads $out_dir/"scaffolds.fasta" -o $out_dir/"scaffolds_quast"	
+	printf "Done quality check for scaffolds using Quast\n"
+	
+	python $script_dir/coverage_assembly.py -s $out_dir/"scaffolds.fasta" -o $out_dir/ -c $cut_off -r $forward_read
+        printf "Done coverage file\n"
 
-    mkdir $out_dir/"scaffolds_quast"
-    python /c1/apps/quast/quast-2.3/quast.py --threads $num_threads $out_dir/"scaffolds.fasta" -o $out_dir/"scaffolds_quast"
+	temp_copy_dir=`dirname $out_dir` #this is passed into copy_bash script..                                                                                         
+        bash $script_dir/copy_fasta_files.sh -a $out_dir -i $isolate -o $temp_copy_dir
+	printf "copyied file Successfully\n"
 
-    printf "Done quality check using Quast\n"
+    else
+	printf "No scaffodls file was generated"
+    fi
+
+  #  if [ -f $out_dir/"scaffolds.fasta" ]
+ #   then
+#	python $script_dir/coverage_assembly.py -s $out_dir/"scaffolds.fasta" -o $out_dir/ -c $cut_off -r $forward_read 
+#	temp_copy_dir=`dirname $out_dir` #this is passed into copy_bash script..
+#	bash $script_dir/copy_fasta_files.sh -a $out_dir -i $isolate -o $temp_copy_dir
+ #   else
+#	printf "No fasta file was generated\n"
+    #fi
 
     rm $out_dir/"out_unpaired_"$temp_forw_read $out_dir/"out_unpaired_"$temp_rev_read $out_dir/"before_rr.fasta" $out_dir/"before_rr.fastg"  # remove unpaired ends generated by trimmmomatic
 
-    #$out_dir/"out_paired_"$temp_forw_read $out_dir/"out_paired_"$temp_rev_read
-    printf "Done removing trimmomatic reads and SPAdes before files\n"
+    printf "Removed trimmomatic reads and SPAdes before files\n"
 
-    rm -rf $out_dir/"misc"
-    printf "Done removing misc folder from SPAdes\n"
+    if [ -d $out_dir/"misc" ] # if misc is present
+    then
+	rm -rf $out_dir/"misc"
+	printf "Removed misc folder from SPAdes\n"
+    else
+	printf "No misc directory was present\n"
+    fi
+
     set +x
 } # assembly function ends 
 
@@ -126,7 +147,7 @@ cat <<UsageDisplay
 # All sanity checks have already been performed in there. 
 # We here do: assembly, sequencing typing using SRST (trimmomatic reads) and blast Sequence typing.
 
-automate_process.sh -[t threads] -f <forward_read> -r <reverse_read> -o <output_Directory>  -a <illumina_adapter_file> -c <cut_off for SPAdes> -t <number of threads> -s <tasks to do>
+automate_process.sh -[t threads] -f <forward_read> -r <reverse_read> -o <output_Directory>  -a <illumina_adapter_file> -c <cut_off for SPAdes> -t <number of threads> -s <tasks to do> -w <dir_of_the_script_stored>
 Default threads 16
 
 #################################################
@@ -151,11 +172,14 @@ out_dir=""
 tasks_to_do=""
 num_threads=""
 isolate=""
+script_dir=""
 
 # --- 
-while getopts "s:c:f:r:a:t:o:h" args # iterate over arguments                             
+while getopts "w:s:c:f:r:a:t:o:h" args # iterate over arguments                             
 do
     case $args in
+	w)
+	    script_dir=$OPTARG ;; # this is directory of the scripts stored
 	c)
 	    cut_off=$OPTARG ;; # covergae cut off for SPAdes .. 
 	f)                                                  
@@ -170,7 +194,6 @@ do
             out_dir=$OPTARG ;; # output directory
 	s)
 	    tasks_to_do=$OPTARG ;; #what things to do.. 
- 
 	h)
 	    usage ;;
 	*)
@@ -205,43 +228,10 @@ then
     printf "\n<--Done with assembly -->\n"
 fi
 
-if [[ "$tasks_to_do" -eq 4 ]]
-then
-   
+if [[ $tasks_to_do -eq 4 ]]
+then   
     perform_assembly ;
     printf "\n<-- Done with ONLY assembly -->\n"
 fi
-
-#-- run spades--
-# it runs mismatch corrector with --careful flag <which is recommended>
-# Default gzip output      
-# Default runs bayes_hammer for read correction and assembler 
-
-
-#printf "We are going to run SPAdes with cut_off $cut_off \n"
-
-#python /c1/apps/spades/SPAdes-3.5.0-Linux/bin/spades.py -t $num_threads --cov-cutoff $cut_off --careful -1 $out_dir/"out_paired_"$temp_forw_read -2 $out_dir/"out_paired_"$temp_rev_read -o $out_dir 
-
-#printf "we are going to run QUAST with contigs files\n"
-# -- run quast for contigs first
-
-#mkdir $out_dir/"contigs_quast"
-#python /c1/apps/quast/quast-2.3/quast.py --threads $num_threads $out_dir/"contigs.fasta" -o $out_dir/"contigs_quast"
-
-#printf "we are going to run Quast with scaffolds file\n"
-# run Quast for scaffolds then
-
-#mkdir $out_dir/"scaffolds_quast"
-#python /c1/apps/quast/quast-2.3/quast.py --threads $num_threads --scaffolds $out_dir/"scaffolds.fasta" -o $out_dir/"scaffolds_quast"
-
-#printf "Done quality check using Quast\n"
-
-#rm $out_dir/"out_unpaired_"$temp_forw_read $out_dir/"out_unpaired_"$temp_rev_read $out_dir/"before_rr.fasta" $out_dir/"before_rr.fastg"  # remove unpaired ends generated by trimmmomatic
-
-# $out_dir/"out_paired_"$temp_forw_read $out_dir/"out_paired_"$temp_rev_read
-#printf "Done removing trimmomatic reads and SPAdes before files\n"
-
-#rm -rf $out_dir/"misc"
-#printf "Done removing misc folder from SPAdes\n"
 
 printf "<--Done with isolate. Cheers!  -->\n"

@@ -34,5 +34,4 @@ cp $assembled_dir/"scaffolds.fasta" $out_dir/"all_sample_scaffolds_fasta"/$isola
 cp $assembled_dir/"contigs.fasta" $out_dir/"all_sample_contigs_fasta"/$isolate"__contigs.fasta"
 cp $assembled_dir/"info_cov_node.txt" $out_dir/"all_sample_info_cov_per_node"/$isolate"__info_cov_node.txt"
 
-info_cov_node.txt 
 set +x

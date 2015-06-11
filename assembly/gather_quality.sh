@@ -12,6 +12,9 @@ gather_quality.sh  -d <assembly output directory>
 Option(s):
 -d output directory of assembled genomes
 
+Output files will be created from the folder you run
+
+
 #################################################
 UsageDisplay
 exit;
@@ -56,6 +59,9 @@ fi
 
 check_dir;
 
+#header="Assembly  # contigs (>= 0 bp)  # contigs (>= 1000 bp)  Total length (>= 0 bp)  Total length (>= 1000 bp)  # contigs  Largest contig  Total length  GC (%)  N50     N75    L50  L75  # N's per 100 kbp"
+#printf "%s" $header >> contigs_full_report.txtprintf "%s" $header >> scaffolds_full_report.txt
+
 for f in $out_direc/*   # loop over isolate folders - where output directory provided -->
 do
     if [[ -d $f ]] # if directory  -- 
@@ -64,26 +70,25 @@ do
 
 	if [ -d $f/"contigs_quast" ] # if contigs_quast folder available
 	then
-#	    printf "$isolate_name\n" >> contigs_quality.tsv # take isolate name!
-	#   tail -1 $f/"contigs_quast"/transposed_report.txt >> contigs_quality.txt # get last line#	    tail -2 $f/"contigs_quast"/transposed_report.tsv >> contigs_quality.tsv # get last line#	    printf "#\n" >> contigs_quality.tsv
-
 	    # Added code on Apr 28. Maliha's code.
-
-	    sed -n '4p' $f/"contigs_quast"/transposed_report.txt | sed "s/contigs/$isolate_name/g"  >> contigs_full_report.txt
-
+	    if [ -f $f/"contigs_quast"/transposed_report.txt ]
+	    then
+		sed -n '4p' $f/"contigs_quast"/transposed_report.txt | sed "s/contigs/$isolate_name/g"  >> contigs_full_report.txt
+	    else
+		printf "$f doesn't have QUAST report\n"
+	    fi
 	else
 	    printf "$isolate_name didn't have contigs_quast Folder \n"  >> log_quality.txt 
 	fi # end of contigs_quast check
 
 	if [ -d $f/"scaffolds_quast" ] # if scaffolds folder avail..!
 	then
-#	    printf "$isolate_name\n" >> scaffolds_quality.tsv  # take isolate name
-#	    tail -1 $f/"scaffolds_quast"/transposed_report.txt >> scaffolds_quality.txt # get last line
-#	    tail -2 $f/"scaffolds_quast"/transposed_report.tsv >> scaffolds_quality.tsv # get last line
-#	    printf "#\n" >> scaffolds_quality.tsv
-
-	    sed -n '4p' $f/"scaffolds_quast"/transposed_report.txt | sed "s/scaffolds/$isolate_name/g"  >> scaffolds_full_report.txt
-
+	    if [ -f $f/"scaffolds_quast"/transposed_report.txt ]
+	    then
+		sed -n '4p' $f/"scaffolds_quast"/transposed_report.txt | sed "s/scaffolds/$isolate_name/g"  >> scaffolds_full_report.txt
+	    else
+		printf "$f does not have QUAST report\n"
+	    fi
  	else
 	    printf "$isolate_name doesn't have scaffolds folder\n" >> log_quality.txt
 	fi # if scaffolds folder available!

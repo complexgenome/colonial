@@ -5,17 +5,17 @@
 # __location__ Price Lab 4th Fl, New Hampshire, Cube# 420F
 
 #< - - - - - - - - - - - - - - - - - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ->
-
+# spades/3.5.0
 get_fastq_files(){ # get reverse and foward strand of sample isoltae
 
     # paramter is $1
     trim_forward=""
     trim_reverse="" # variables to store trim reads, if available
 
-    regex_for='(\_L00[0-9]+)?\_R1+(\_001)?(\_trimmed)?\.fastq\.gz$' # updated on Apr 24 to have ST131 data. which do not have L001 format
+    regex_for='(\_L00[0-9]+)?\_R1+(\_00[1-9])?(\_trimmed)?\.fastq\.gz$' # updated on Apr 24 to have ST131 data. which do not have L001 format
     #regex_for='\_L00[0-9]+\_R1+(\_001)?\.fastq\.gz$'
 
-    regex_rev='(\_L00[0-9]+)?\_R2+(\_001)?(\_trimmed)?\.fastq\.gz$' 
+    regex_rev='(\_L00[0-9]+)?\_R2+(\_00[1-9])?(\_trimmed)?\.fastq\.gz$' 
     #regex_rev='\_L00[0-9]+\_R2+(\_001)?\.fastq\.gz$' 
 
     #updated find on 24th April to search symlinks.
@@ -39,8 +39,7 @@ get_fastq_files(){ # get reverse and foward strand of sample isoltae
 		then
 		   
 		    if [[ "`basename $file`" == *"trimmed"*  ]] # if R1 and trimmed
-		    then
-		
+		    then		
 			trim_forward=$file # store in trim_forward variable .. -
 
 		    else
@@ -93,15 +92,13 @@ check_dir(){ # function to check dirctories
     fi 
 
     out_dir=$(cd $out_dir;pwd)
-    sample_direc=$(cd $sample_direc;pwd)
-    # get full path .. that is /home/my_user_name/folder_depth1_/blah1/blah_n/file_R1_001.fastq.gz 
+    sample_direc=$(cd $sample_direc;pwd) # get full path .. /home/my_user_name/folder_depth1_/blah1/blah_n/file_R1_001.fastq.gz 
     
     if [ ! -d "$out_dir" ] ||  [ ! -d "$sample_direc" ]
     then	
 	printf "\nSample/output directory incorrect. Aborting...\n"
         usage;
     fi
-
 } # end of check_dir function
 
 check_files(){ # function to check files 
@@ -167,7 +164,6 @@ create_directs(){ # function to create directs
 	mkdir $out_dir/all_sample_scaffolds_fasta
 	mkdir $out_dir/all_sample_contigs_fasta
 	mkdir $out_dir/all_sample_info_cov_per_node
-
     fi
 
 } # create directory function ends
@@ -323,29 +319,26 @@ do
 	    forward_link=$out_dir/$i/`basename $forward_read` # save symbolik links 
 	    reverse_link=$out_dir/$i/`basename $reverse_read`
 	   
-	    job_id=$(sbatch  $script_dir/automate_process.sh -f $forward_link -r $reverse_link -t $num_threads -o $out_dir/$i -a $adap_file -c $coverage  -s $tasks | awk '{print $4}')
+	    job_id=$(sbatch  $script_dir/automate_process.sh -f $forward_link -r $reverse_link -t $num_threads -o $out_dir/$i -a $adap_file -c $coverage  -s $tasks -w $script_dir | awk '{print $4}')
 
-            #bash $script_dir/automate_process.sh -f $forward_link -r $reverse_link -t $num_threads -o $out_dir/$i -a $adap_file -c $coverage -s $tasks
+            #bash $script_dir/automate_process.sh -f $forward_link -r $reverse_link -t $num_threads -o $out_dir/$i -a $adap_file -c $coverage -s $tasks -w $script_dir
 
 	    printf "$i submitted for assembly to $job_id\n"  >> $curr_dir/"assem_job_ids.txt"
 	    max_job_ID=$job_id
 
-	    if [[ "$tasks" -eq 7 ]] || [[ "$tasks" -eq 4 ]] # throw jobs of coverage only if assembly to be done
-	    then
-
-		job_id=$(sbatch --dependency=afterok:$job_id  $script_dir/coverage_assembly.py -r $forward_link -s $out_dir/$i/"scaffolds.fasta" -o $out_dir/$i -c $coverage | awk '{print $4}' ) 
+#COMMENTED on JUne 10
+	   # if [[ "$tasks" -eq 7 ]] || [[ "$tasks" -eq 4 ]] # throw jobs of coverage only if assembly to be done
+	    #then
+	#	job_id=$(sbatch --dependency=afterok:$job_id  $script_dir/coverage_assembly.py -r $forward_link -s $out_dir/$i/"scaffolds.fasta" -o $out_dir/$i -c $coverage | awk '{print $4}' ) 
                 #scaffolds file for coverage calculation 
-
                 #python coverage_assembly.py -r $forward_link -s $out_dir/$i/"scaffolds.fasta" -o $out_dir/$i -c $coverage
-
-		printf "$i has python coverage script at job $job_id\n" >> $curr_dir/"cov_job_ids.txt"
-	       
-		job_id=$(sbatch --dependency=afterok:$job_id $script_dir/copy_fasta_files.sh -a $out_dir/$i -i $i -o $out_dir | awk '{print $4}')
-
-		printf "$i submitted for copying contigs, scaffolds and info coverage files at job $job_id\n" >> $curr_dir/"copy_job_ids.txt"
+	#	printf "$i has python coverage script at job $job_id\n" >> $curr_dir/"cov_job_ids.txt"
+	#	job_id=$(sbatch --dependency=afterok:$job_id $script_dir/copy_fasta_files.sh -a $out_dir/$i -i $i -o $out_dir | awk '{print $4}')
+	#	printf "$i submitted for copying contigs, scaffolds and info coverage files at job $job_id\n" >> $curr_dir/"copy_job_ids.txt"
                 #submit another job to copy contigs and scaffold fasta file.. 
- 
-	    fi # if assembly or assembly + sequence typing .. 
+	 #   fi # if assembly or assembly + sequence typing .. 
+## Commented on June 10
+
 	    max_job_ID=$job_id
 	    unset forward_link reverse_link job_id
 	else
@@ -362,9 +355,9 @@ printf "Isolates with forward and reverse reads are $isolates_found\n"  >> $curr
 printf "Highest job id is $max_job_ID\n" >> $curr_dir/"logs_errors.txt"
 printf "<--Done looping over isolates-->\n"  >> $curr_dir/"logs_errors.txt"
 
-printf "Please check "$curr_dir"/"copy_job_ids.txt" for copy submitted jobs and other information\n"
+#printf "Please check "$curr_dir"/"copy_job_ids.txt" for copy submitted jobs and other information\n"
 printf "Please check "$curr_dir"/"assem_job_ids.txt" for assembly submitted jobs and other information\n"
-printf "Please check "$curr_dir"/"cov_job_ids.txt" for coverage submitted jobs and other information\n"
+#printf "Please check "$curr_dir"/"cov_job_ids.txt" for coverage submitted jobs and other information\n"
 printf "please check "$curr_dir"/"logs_errors.txt" for error logs (not necessarily to be present)\n"
 
 printf "<-Thank you for using this pipeline. TADA! \n->"

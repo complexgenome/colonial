@@ -12,13 +12,13 @@ get_fastq_files(){ # get reverse and foward strand of sample isoltae
     trim_forward=""
     trim_reverse="" # variables to store trim reads, if available
 
-    regex_for='(\_L00[0-9]+)?\_R1+(\_001)?(\_trimmed)?\.fastq\.gz$'
+    regex_for='(\_L00[0-9]+)?\_R1+(\_00[1-9])?(\_trimmed)?\.fastq\.gz$'
    # regex_for='\_L00[0-9]+\_R1+(\_001)?\.fastq\.gz$'
-    regex_rev='(\_L00[0-9]+)?\_R2+(\_001)?(\_trimmed)?\.fastq\.gz$' 
+    regex_rev='(\_L00[0-9]+)?\_R2+(\_00[1-9])?(\_trimmed)?\.fastq\.gz$' 
    # regex_rev='\_L00[0-9]+\_R2+(\_001)?\.fastq\.gz$' 
-  
+ 
     array_name=($(find -L $sample_direc -name "*$1*" 2>/dev/null)) # store find files in an array --
-    #array_name=($(find $sample_direc -type f -name "*$1*" 2>/dev/null)) # store find files in an array --
+#    array_name=($(find $sample_direc -type f -name "*$1*" 2>/dev/null)) # store find files in an array --
 
     if [ ${#array_name[@]} -gt 2 ] 
     then
@@ -27,7 +27,7 @@ get_fastq_files(){ # get reverse and foward strand of sample isoltae
      
     if [ ${#array_name[@]} -gt 0 ]  # if greater than 0 size 
     then
-    
+	
 	for file in "${array_name[@]}" # iterate over array 
 	do	
 	    if [[ ${file: -9} == ".fastq.gz"  ]]  # if fastq.gz extension
@@ -59,7 +59,7 @@ get_fastq_files(){ # get reverse and foward strand of sample isoltae
 		if [[ ${file: -4} != ".txt"  ]] # if file doesn't end with .txt & doesn't have .fastq.gz extension --  
 		then
 		    printf "$file\n" >> $curr_dir/"logs_errors.txt"
-		    printf "$1 doesn't have .fastq.gz files in its folder\n"  >> $curr_dir/"logs_errors.txt"
+		    printf "$1 doesn't have .fastq.gz files in its folder\n"  >> $curr_dir/"no_fastq_logs_errors.txt"
 
 		fi # end of .txt file check if 
 	    fi # if file has .fastq.gz extension 
