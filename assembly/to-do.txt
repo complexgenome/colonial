@@ -18,4 +18,4 @@ Make sure info_cov files are as the total number of isolates provided.
 Else run find_missing_coverage.sh
 
 6-
-Place SRST database files in the assembly folder.. otherwise SRST won't be successfull.
+Place SRST database files in the assembly folder.. otherwise SRST won't be successful.
