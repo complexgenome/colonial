@@ -1,0 +1,21 @@
+You should do below things before and after, if required, running  this pipeline:
+
+1-
+check if the data provided is in file format or is in symbolink format.
+
+2-
+Provide correct MLST SRST2 file in automate shell script. If they're incorrect Sequence typing using 
+SRST2 shall be skipped.
+
+3-
+Check forward and reverse suffix before running assembly pipeline.
+
+4-
+Do a DRY run to ensure things WOULD be OK.
+
+5-
+Make sure info_cov files are as the total number of isolates provided.
+Else run find_missing_coverage.sh
+
+6-
+Place SRST database files in the assembly folder.. otherwise SRST won't be successfull.
