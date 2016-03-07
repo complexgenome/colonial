@@ -12,7 +12,8 @@ run_gubbins.sh -o <out dir> -i <input dir> -s <seq type>
 
 bash run_gubbins.sh  -i /lustre/groups/pricelab/sanjeev_files/io_files/ -o ./ -s ST1234
 
-this script calls in run_gubbins at colonial_bin 
+this script calls in run_gubbins at colonial_bin
+This script is called from gubbins.py 
 That means: all input, and outout parameters have been validated
 
 #################################################
