@@ -12,6 +12,9 @@ run_gubbins.sh -o <out dir> -i <input dir> -s <seq type>
 
 bash run_gubbins.sh  -i /lustre/groups/pricelab/sanjeev_files/io_files/ -o ./ -s ST1234
 
+this script calls in run_gubbins at colonial_bin 
+That means: all input, and outout parameters have been validated
+
 #################################################
 
 UsageDisplay
@@ -86,11 +89,13 @@ fi
 
 pushd $out_dir/$seq_type > /dev/null
 
+printf "we are doing great for $seq_type \n"
+printf "File is $snp_fasta_file\n"
 python /groups/pricelab/colonial_bin/gubbins_1.4.2_scripts/run_gubbins.py -u -t fasttree -p tree $snp_fasta_file &> /dev/null
 #
 popd > /dev/null
 
-
+printf "<--Done with ST $seq_type-->"
 
 
 
