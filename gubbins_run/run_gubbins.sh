@@ -96,7 +96,7 @@ python /groups/pricelab/colonial_bin/gubbins_1.4.2_scripts/run_gubbins.py -u -t 
 #
 popd > /dev/null
 
-printf "<--Done with ST $seq_type-->"
+printf "<--Done with ST $seq_type-->\n"
 
 
 
