@@ -4,7 +4,7 @@ __author__ = "Sanjeev Sariya"
 __date__= "18 Aug 2015 | Feb 08 2016"
 __maintainer__= "Sanjeev Sariya"
 __status__= "development"
-__version__="0.2"
+__version__="0.3"
 """
 Takes in confidence, RDP output, and OTU map
 Confidence -c flag

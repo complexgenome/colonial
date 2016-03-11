@@ -19,25 +19,42 @@ def create_sample_list(_otu_array):
     #sample_count=defaultdict(int)
     sample_count=OrderedDict()
     
-    #rep_seq_object=Rep_seq(int(_otu_array[0])) #create object    #rep_seq_object.sample_count_dict=parse_sample(_otu_array[1:])
+    #rep_seq_object=Rep_seq(int(_otu_array[0])) #create object
+    #rep_seq_object.sample_count_dict=parse_sample(_otu_array[1:])
 
     for x in _otu_array[1:]: #_otu_array[0] - is rep seq
 
-        _under_score=x.find("_")
+        hold_position=[]# store all positions of _ .. added on 11 March
+        # sample names can have _ in them...
+        #_under_score=x.find("_")
 
-        if _under_score!=-1: # _under_score=x.find("_")
-            _sample=x[:_under_score] # sample can be or cannot be Number.. it is good to keep it as string
+        for pos,ch in enumerate(x):
+            #http://stackoverflow.com/questions/2294493/how-to-get-the-position-of-a-character-in-python
+            if "_" == ch:
+                hold_position.append(pos)
+        #-- for ends . hold all _ indices
+        
+        if len(hold_position)>0:
+
+            _sample=x[:max(hold_position)] #parse sample name until last _ index
             
             if _sample in sample_count:
                 sample_count[_sample]+=1
             else:
                 sample_count[_sample]=1
+            #-- ends for dict keeping
+            
         else:
             logging.debug("_ missing from %s" %(x))
-    #} For loop ends
+            logging.debug("Exiting! Look at %s for problem" %(x))
+            sys.exit()
+        # if underscore found
+
+    #} For loop ends iterating over all Sample_1_34
 
     if len(sample_count) ==0:
         logging.debug("There are no sample is rep seq %s" %(_otu_array[0]))
+        logging.debug("Exiting due to issue in dictionary !")
         sys.exit()
 
     rep_seq_object=Rep_seq(_otu_array[0],sample_count) #rep_seq_object.sample_count_dict=sample_count # set dictionary
