@@ -17,8 +17,11 @@ class Microbiome:
         self.domain=""
         self.phylum=""
         self.class_m=""
+        #self.sub_class=""
         self.order=""
+        #self.sub_order=""
         self.family=""
+        #self.sub_family=""
         self.genus=""
         self.species=""
         
