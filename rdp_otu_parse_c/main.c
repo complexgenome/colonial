@@ -9,10 +9,11 @@ Sanjeev Sariya
 Date 11 March 2016
 Price Lab, 450 New Hampshire NW Ave
 
+gcc -g -Wall -Wextra *.c -o parse 
 gcc -g -Wall -Wextra -pedantic *.c -o parse  -std=c99
 
-Cannot use -pedantic while compiling as it mixes
-Canot use -std=c99 it conflicts with unistd
+- Cannot use -pedantic while compiling as it mixes
+- Canot use -std=c99 it conflicts with unistd
 */
 
 void print_help();
@@ -21,6 +22,7 @@ int main(int argc, char * argv[]){
   
   if(argc == 1){
     print_help();
+    return 0;/*EXIT*/
   }
   char get_opt;
   const char* rdp_file=NULL; /*rdp file*/
@@ -35,7 +37,7 @@ int main(int argc, char * argv[]){
       rdp_file=optarg;
       break;
     case 'c':
-      confid=atof(optarg);/*covert to float*/
+      confid=atof(optarg);/*convert to float*/
       break;
     case 'm':
       map_file=optarg;
