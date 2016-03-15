@@ -5,7 +5,7 @@
 
 typedef struct{
   char *seq;
-  Sample_count sample_count; /*link list for sample and 
+  Sample_count *sample_count; /*link list for sample and 
 			      *its count
 			      */
   struct Rep_seq *next;

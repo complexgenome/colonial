@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
+
 #include "parse_files.h"
 
 /*
@@ -9,7 +10,10 @@ Sanjeev Sariya
 Date 11 March 2016
 Price Lab, 450 New Hampshire NW Ave
 
-gcc -g -Wall -Wextra *.c -o parse 
+gcc -g -Wall -Wextra *.c -o program_parse -pedantic -std=gnu99
+
+gcc -g -Wall -Wextra -pedantic *.c -o parse 
+
 gcc -g -Wall -Wextra -pedantic *.c -o parse  -std=c99
 
 - Cannot use -pedantic while compiling as it mixes
