@@ -128,13 +128,24 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int val){
   
   struct Rep_seq *loop_rep_seq=local;
   struct Rep_seq *temp_rep_s=malloc(sizeof(struct Rep_seq));
+  temp_rep_s->sample_count=malloc(sizeof(struct Sample_count));
+  /*create sample list along with it.. Sample_count node..
+   *
+   *Rep_seq-node->Rep-sequence name
+   *            -sample name
+   *            -sample-count
+   *
+   */
+ 
+
   /*variables to add new rep seq node */
 
-  struct Sample_count *sc_temp;
+  //  struct Sample_count *sc_temp;
   /**/
-  if(temp_rep_s==NULL){
+  if(temp_rep_s==NULL || temp_rep_s->sample_count == NULL){
     printf("Something went wrong in memory allocation\n");
   }
+  temp_rep_s->sample_count->next=NULL;
   temp_rep_s->next=NULL;
   
   while(loop_rep_seq->next){
@@ -154,20 +165,19 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int val){
     }
     else{
 
-      sc_temp=local->sample_count;
-      if(sc_temp == NULL){
-
+      //sc_temp=local->sample_count;
+      
+      //if(sc_temp == NULL){
+      //	printf("wooww\n");
 	//	printf("We have after trimming %s\n",temp_array[i]);
-	sc_temp=malloc(sizeof(struct Sample_count *));
-	sc_temp->name=malloc(strlen(temp_array[i]) +1);
-	strcpy(sc_temp->name,temp_array[i]);
-	printf("%s\n",sc_temp->name);
-	sc_temp->next=NULL;
-	local->sample_count=sc_temp;
-      }
-      else{
-	
-      }
+	//sc_temp=malloc(sizeof(struct Sample_count *));
+	//sc_temp->name=malloc(strlen(temp_array[i]) +1);
+	//strcpy(sc_temp->name,temp_array[i]);
+	//	printf("%s\n",sc_temp->name);
+	//sc_temp->next=NULL;
+	//local->sample_count=sc_temp;
+	//}
+
     }
   }
     
