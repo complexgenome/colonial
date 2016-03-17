@@ -12,6 +12,6 @@ typedef struct{
   struct Rep_seq *previous;
 } Rep_seq;
 
-
+void add_node(Rep_seq *, char **,unsigned int );
 #endif
 
