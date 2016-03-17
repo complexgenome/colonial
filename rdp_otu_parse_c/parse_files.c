@@ -82,7 +82,11 @@ char **array_of_str(char *line, unsigned int count){
   parsed_word=strtok(line,"\t");
 
   while(parsed_word!=NULL && i < count ){
-    
+
+    pos_underscore(parsed_word);
+    /*
+     * keep only sample names. Get rid of seq identifier
+     */
     array_words[i]=malloc(strlen(parsed_word)+1);//'\0' last place
     strcpy(array_words[i++],parsed_word); //copy chracters. we need them outside scope
     parsed_word=strtok(NULL,"\t");
@@ -150,11 +154,10 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int val){
     }
     else{
 
-      pos_underscore(temp_array[i]);
       sc_temp=local->sample_count;
       if(sc_temp == NULL){
 
-	printf("We have after trimming %s\n",temp_array[i]);
+	//	printf("We have after trimming %s\n",temp_array[i]);
 	sc_temp=malloc(sizeof(struct Sample_count *));
 	sc_temp->name=malloc(strlen(temp_array[i]) +1);
 	strcpy(sc_temp->name,temp_array[i]);
