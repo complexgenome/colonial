@@ -12,13 +12,13 @@ int parse_otu_map_file(const char *otu_file){
   char line[SIZE_BUFF]; /*store line*/  
   FILE *otu_handle=fopen(otu_file,"r");
   char **split_array=NULL;/*store split line values*/
-  unsigned int val=0;
+  unsigned int tab_count=0;
 
   if(otu_handle){
     
-    Rep_seq *rep_seq_head;
+    struct Rep_seq *rep_seq_head;
     /*printf("address is %p\n",rep_seq_head);*/
-    rep_seq_head=malloc(sizeof(struct Rep_seq *)); 
+    rep_seq_head=malloc(sizeof(struct Rep_seq )); 
     /*printf("address is %p\n",rep_seq_head);*/
     
     if(rep_seq_head ==NULL){
@@ -28,13 +28,14 @@ int parse_otu_map_file(const char *otu_file){
     while(fgets(line, sizeof(line), otu_handle)){
       trim_character('\n',line);
       
-      printf("Rep seq's value:%p %s %p\n",rep_seq_head,rep_seq_head->seq,rep_seq_head->next);
+      printf("Rep seq's value:%p %s %p\n",(void*)rep_seq_head,rep_seq_head->seq,(void*)rep_seq_head->next);
+      printf("Rep seq s_count %p %p\n",(void*)rep_seq_head->sample_count,(void*)rep_seq_head->sample_count);
       
-      val=get_tab_count(line); /*get number of words/tab*/
-      split_array=array_of_str(line,val+1);
-      add_node(rep_seq_head,split_array,val);
+      tab_count=get_tab_count(line); /*get number of words/tab*/
+      split_array=array_of_str(line,tab_count+1);
+      add_rep_node(rep_seq_head,split_array,tab_count);
       
-      free_array(&split_array,val);/*Free memory of split line*/
+      free_array(&split_array,tab_count);/*Free memory of split line*/
     }
     /*looping file ends*/
     fclose(otu_handle);/*close file*/
@@ -119,11 +120,77 @@ void trim_character(char chr,char *chr_array){
   *(chr_array+i)='\0';
 }
 /*Function ends---------------------------*/
-void add_node(Rep_seq *local,char **temp_array, unsigned int val){
+void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int val){
   
-  printf("We are here %p %d\n",local,val);
-  for(unsigned int i=0;i<val;i++){
-    printf("string is %s\n",temp_array[i]);
+  struct Rep_seq *loop_rep_seq=local;
+  struct Rep_seq *temp_rep_s=malloc(sizeof(struct Rep_seq));
+  /*variables to add new rep seq node */
+
+  struct Sample_count *sc_temp;
+  /**/
+  if(temp_rep_s==NULL){
+    printf("Something went wrong in memory allocation\n");
   }
+  temp_rep_s->next=NULL;
+  
+  while(loop_rep_seq->next){
+    loop_rep_seq=loop_rep_seq->next;
+  }
+  /*until you find last node*/
+  
+  loop_rep_seq->next=temp_rep_s;
+  
+  for(unsigned int i=0;i<val;i++){
+    
+    if(i==0){
+      /*add representative seq first*/
+      loop_rep_seq->seq=malloc(strlen(temp_array[i])+1);
+      strcpy(loop_rep_seq->seq,temp_array[i]);
+
+    }
+    else{
+
+      pos_underscore(temp_array[i]);
+      sc_temp=local->sample_count;
+      if(sc_temp == NULL){
+
+	printf("We have after trimming %s\n",temp_array[i]);
+	sc_temp=malloc(sizeof(struct Sample_count *));
+	sc_temp->name=malloc(strlen(temp_array[i]) +1);
+	strcpy(sc_temp->name,temp_array[i]);
+	printf("%s\n",sc_temp->name);
+	sc_temp->next=NULL;
+	local->sample_count=sc_temp;
+      }
+      else{
+	
+      }
+    }
+  }
+    
+  print_list(local);
 }
-/*---------------------------*/
+/*Functoin ends ---------------------------*/
+
+void pos_underscore(char *temp_seq){
+  /*
+   *Find max position of _ (an underscore)
+   *Put '\0' at that position
+   *the end result is the sample name
+   */
+  
+  int max_ind=-1;/*get _ position*/
+  int i=0;/*iterate*/
+
+  while(*(temp_seq+i)!='\0'){
+    
+    if(*(temp_seq+i)=='_' && i>max_ind){
+      max_ind=i;
+    }
+    i++;
+  }
+
+  *(temp_seq+max_ind)='\0';
+  /*trim string to its sample name!*/
+}
+/*function ends ----------------------------*/
