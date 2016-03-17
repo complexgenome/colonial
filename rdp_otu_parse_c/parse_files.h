@@ -14,5 +14,5 @@ unsigned int get_tab_count(char *); /*get tab count*/
 
 char **array_of_str(char *, unsigned int);/*split and store in array*/
 void free_array(char ***, unsigned int); /*Free two dim array*/
-
+void pos_underscore(char *);
 #endif

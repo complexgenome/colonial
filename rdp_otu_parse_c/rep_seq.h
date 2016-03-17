@@ -3,15 +3,17 @@
 
 #include "local_structure.h"
 
-typedef struct{
+struct Rep_seq{
   char *seq;
-  Sample_count *sample_count; /*link list for sample and 
+  struct Sample_count *sample_count; /*link list for sample and 
 			      *its count
 			      */
   struct Rep_seq *next;
-  struct Rep_seq *previous;
-} Rep_seq;
 
-void add_node(Rep_seq *, char **,unsigned int );
+};
+
+void add_rep_node(struct Rep_seq *, char **,unsigned int );
+void print_list(struct Rep_seq *);
+void delete_rep_node(struct Rep_seq *);
 #endif
 
