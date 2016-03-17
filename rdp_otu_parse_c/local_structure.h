@@ -8,13 +8,13 @@ typedef struct{
 } Dynamic_list;
 /*linked list*/
 
-typedef struct{
+struct Sample_count{
 
   char *name;/*sample name*/
   unsigned int count;/*its count*/
   struct Sample_count *next;
-  struct Sample_count *previous;
-} Sample_count;
+
+};
 /*samle and its count*/
 
 int size_dynamic_list();
