@@ -57,10 +57,10 @@ int main(int argc, char * argv[]){
     /*switch case ends*/
   }/*while ends*/
   
-  printf("RDP %s\n",rdp_file);
-  printf ("Map file %s\n",map_file);
-  printf("RUN name %s\n",run_name);
-  printf("Confidence used is %f\n",confid);
+  //printf("RDP %s\n",rdp_file);
+  //printf ("Map file %s\n",map_file);
+  //printf("RUN name %s\n",run_name);
+  //  printf("Confidence used is %f\n",confid);
   
   parse_otu_map_file(map_file);
   return 0;
