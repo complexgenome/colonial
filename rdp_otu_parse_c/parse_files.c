@@ -28,7 +28,7 @@ int parse_otu_map_file(const char *otu_file){
       trim_character('\n',line);/*get rid of '\n' char */
       
       //      printf("Rep seq's value at beginning:%p %s %p\n",(void*)rep_seq_head,rep_seq_head->seq,(void*)rep_seq_head->next);
-      //printf("Rep seq s_count %p %p\n",(void*)rep_seq_head->sample_count,(void*)rep_seq_head->sample_count);
+      //printf("Rep seq s_count %p %p\n",(void*)rep_seq_head->sample_name_head,(void*)rep_seq_head->sample_name_head);
       
       tab_count=get_tab_count(line); /*get number of words/tab*/
       split_array=array_of_str(line,tab_count+1);
@@ -131,19 +131,19 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
   struct Rep_seq *temp_rep_s=malloc(sizeof(struct Rep_seq));
 
   temp_rep_s->next=NULL;
-  temp_rep_s->sample_count=NULL;/*MUST to initialize to NULL*/
+  temp_rep_s->sample_name_head=NULL;/*MUST to initialize to NULL*/
   /*make pointers to point to NULL other wise they might point to Junk!*/
   /*variables to add new rep seq node */
   
-  /*create sample list along with it.. Sample_count node..
+  /*create sample list along with it.. Sample_name node..
    *
    *Rep_seq-node->Rep-sequence name
    *            -sample name
    *            -sample-count
    *
    */
-  struct Sample_count *loop_sc;/*iterator for sample name list*/
-  struct Sample_count *temp_sc;/* variable to store sample_count list address*/
+  struct Sample_name *loop_sc;/*iterator for sample name list*/
+  struct Sample_name *temp_sc;/* variable to store sample_name_head list address*/
   
   /**/
   if(temp_rep_s==NULL ){
@@ -171,24 +171,24 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
       
       /*sample name in temp_array now*/
       /*loop_rep_seq is the new repseq node added*/
-      if(loop_rep_seq->sample_count == NULL){
+      if(loop_rep_seq->sample_name_head == NULL){
 	
 	/*If no sample name present in rep seq */
-	temp_sc=malloc(sizeof(struct Sample_count));
+	temp_sc=malloc(sizeof(struct Sample_name));
 	temp_sc->next=NULL;
 	
 	temp_sc->name=malloc(strlen(temp_array[i])+1);
 	temp_sc->count=1;
 	strcpy(temp_sc->name,temp_array[i]);
 	
-	loop_rep_seq->sample_count=temp_sc;
+	loop_rep_seq->sample_name_head=temp_sc;
 	
       }
       else{
 	/*loop_rep_seq is the new repseq node added*/
 	/*sample node is present */
 	
-	loop_sc=loop_rep_seq->sample_count;
+	loop_sc=loop_rep_seq->sample_name_head;
 	if(loop_sc->next == NULL && ( (strcmp(loop_sc->name,temp_array[i])==0))){
 	  loop_sc->count++;
 	}
@@ -212,7 +212,7 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
 	  
 	  if(sample_found==-1){
 
-	    temp_sc=malloc(sizeof(struct Sample_count));
+	    temp_sc=malloc(sizeof(struct Sample_name));
 	    temp_sc->next=NULL;
 	    temp_sc->count=1;/*each sample is present atleast 1 if in array*/
 	    
