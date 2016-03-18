@@ -12,7 +12,7 @@ int parse_otu_map_file(const char *otu_file){
   char line[SIZE_BUFF]; /*store line*/  
   FILE *otu_handle=fopen(otu_file,"r");
   char **split_array=NULL;/*store split line values*/
-  unsigned int tab_count=0;
+  unsigned int tab_count=0;//tab count present in one line*/
 
   if(otu_handle){
     
@@ -25,9 +25,9 @@ int parse_otu_map_file(const char *otu_file){
       return 1;
     }
     while(fgets(line, sizeof(line), otu_handle)){
-      trim_character('\n',line);
+      trim_character('\n',line);/*get rid of '\n' char */
       
-      printf("Rep seq's value at beginning:%p %s %p\n",(void*)rep_seq_head,rep_seq_head->seq,(void*)rep_seq_head->next);
+      //      printf("Rep seq's value at beginning:%p %s %p\n",(void*)rep_seq_head,rep_seq_head->seq,(void*)rep_seq_head->next);
       //printf("Rep seq s_count %p %p\n",(void*)rep_seq_head->sample_count,(void*)rep_seq_head->sample_count);
       
       tab_count=get_tab_count(line); /*get number of words/tab*/
@@ -36,6 +36,7 @@ int parse_otu_map_file(const char *otu_file){
       
       free_array(&split_array,tab_count);/*Free memory of split line*/
     }
+    print_list(rep_seq_head);
     /*looping file ends*/
     fclose(otu_handle);/*close file*/
   }
@@ -130,7 +131,7 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
   struct Rep_seq *temp_rep_s=malloc(sizeof(struct Rep_seq));
 
   temp_rep_s->next=NULL;
-  temp_rep_s->sample_count=NULL;
+  temp_rep_s->sample_count=NULL;/*MUST to initialize to NULL*/
   /*make pointers to point to NULL other wise they might point to Junk!*/
   /*variables to add new rep seq node */
   
@@ -185,12 +186,16 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
       }
       else{
 	/*loop_rep_seq is the new repseq node added*/
+	/*sample node is present */
 	
 	loop_sc=loop_rep_seq->sample_count;
 	if(loop_sc->next == NULL && ( (strcmp(loop_sc->name,temp_array[i])==0))){
 	  loop_sc->count++;
 	}
 	else{
+	  /*more than 1 sample nodes prenset or, sample name didn't match
+	   *Iterate using while
+	   */
 	  
 	  while(loop_sc->next!=NULL){
 	  
@@ -216,6 +221,7 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
 
 	    loop_sc->next=temp_sc;/*append node*/
 	  }
+	  /*if not present in sample name's node list--*/
 	}
 	/*Didn't match initial node's sample name or mode nodes are present*/
 
@@ -224,19 +230,17 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
     }
     /*else ends for temp_array i ==0*/
 
-
   }
   /*For loop ends of array stored*/
     
-  print_list(local);
 }
-/*Functoin ends ---------------------------*/
+/*Function ends ---------------------------*/
 
 void pos_underscore(char *temp_seq){
   /*
    *Find max position of _ (an underscore)
    *Put '\0' at that position
-   *the end result is the sample name
+   *the end result is sample name
    */
   
   int max_ind=-1;/*get _ position*/
