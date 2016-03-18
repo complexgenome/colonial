@@ -17,10 +17,8 @@ int parse_otu_map_file(const char *otu_file){
   if(otu_handle){
     
     struct Rep_seq *rep_seq_head;
-    /*printf("address is %p\n",rep_seq_head);*/
     rep_seq_head=malloc(sizeof(struct Rep_seq ));
     rep_seq_head->next=NULL;
-    /*printf("address is %p\n",rep_seq_head);*/
     
     if(rep_seq_head ==NULL){
       printf("Cannot assign memory to rep seq head\n");
@@ -34,7 +32,7 @@ int parse_otu_map_file(const char *otu_file){
       
       tab_count=get_tab_count(line); /*get number of words/tab*/
       split_array=array_of_str(line,tab_count+1);
-      add_rep_node(rep_seq_head,split_array,tab_count);
+      add_rep_node(rep_seq_head,split_array,tab_count+1);
       
       free_array(&split_array,tab_count);/*Free memory of split line*/
     }
@@ -125,15 +123,16 @@ void trim_character(char chr,char *chr_array){
   *(chr_array+i)='\0';
 }
 /*Function ends---------------------------*/
-void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int val){
-  
+void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
+
+  int sample_found=-1;
   struct Rep_seq *loop_rep_seq=local;/*get head node*/
   struct Rep_seq *temp_rep_s=malloc(sizeof(struct Rep_seq));
-  printf("We have next value as %p\n",(void*)temp_rep_s->next);
+
   temp_rep_s->next=NULL;
   temp_rep_s->sample_count=NULL;
   /*make pointers to point to NULL other wise they might point to Junk!*/
-    /*variables to add new rep seq node */
+  /*variables to add new rep seq node */
   
   /*create sample list along with it.. Sample_count node..
    *
@@ -142,10 +141,9 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int val){
    *            -sample-count
    *
    */
-
-  //struct Sample_count *loop_sc;
-  struct Sample_count *temp_sc;
-
+  struct Sample_count *loop_sc;/*iterator for sample name list*/
+  struct Sample_count *temp_sc;/* variable to store sample_count list address*/
+  
   /**/
   if(temp_rep_s==NULL ){
     printf("Something went wrong in memory allocation\n");
@@ -157,9 +155,9 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int val){
   }
   /*until you find last node*/
   
-  loop_rep_seq->next=temp_rep_s;
+  loop_rep_seq->next=temp_rep_s; /*loop_rep_seq is the new repseq node added*/
   
-  for(unsigned int i=0;i<val;i++){
+  for(unsigned int i=0;i<words;i++){
     
     if(i==0){
       /*add representative seq first*/
@@ -167,21 +165,64 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int val){
       strcpy(loop_rep_seq->seq,temp_array[i]);
 
     }
-    /*store rep sequence*/
+    /*store rep sequence-----*/
     else{
-      //loop_rep_seq=local; /*set back to head node*/
+      
+      /*sample name in temp_array now*/
+      /*loop_rep_seq is the new repseq node added*/
       if(loop_rep_seq->sample_count == NULL){
 	
+	/*If no sample name present in rep seq */
 	temp_sc=malloc(sizeof(struct Sample_count));
 	temp_sc->next=NULL;
+	
+	temp_sc->name=malloc(strlen(temp_array[i])+1);
+	temp_sc->count=1;
+	strcpy(temp_sc->name,temp_array[i]);
+	
 	loop_rep_seq->sample_count=temp_sc;
 	
       }
       else{
-	printf("The adress is %p\n",(void*)loop_rep_seq->sample_count);
+	/*loop_rep_seq is the new repseq node added*/
+	
+	loop_sc=loop_rep_seq->sample_count;
+	if(loop_sc->next == NULL && ( (strcmp(loop_sc->name,temp_array[i])==0))){
+	  loop_sc->count++;
+	}
+	else{
+	  
+	  while(loop_sc->next!=NULL){
+	  
+	    if(strcmp(loop_sc->name,temp_array[i]) == 0){
+	      sample_found=0;
+	      loop_sc->count++;
+	      break;
+	    }
+	    /*if ends*/
+	    loop_sc=loop_sc->next;
+     
+	  }
+	  /*while loop ends---*/
+	  
+	  if(sample_found==-1){
+
+	    temp_sc=malloc(sizeof(struct Sample_count));
+	    temp_sc->next=NULL;
+	    temp_sc->count=1;/*each sample is present atleast 1 if in array*/
+	    
+	    temp_sc->name=malloc(strlen(temp_array[i])+1);
+	    strcpy(temp_sc->name,temp_array[i]);
+
+	    loop_sc->next=temp_sc;/*append node*/
+	  }
+	}
+	/*Didn't match initial node's sample name or mode nodes are present*/
 
       }
+      /*Else ends first node's null sample count*/
     }
+    /*else ends for temp_array i ==0*/
 
 
   }
