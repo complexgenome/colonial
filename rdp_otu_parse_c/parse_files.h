@@ -20,6 +20,10 @@ void free_array(char ***, unsigned int); /*Free two dim array*/
 void remove_seq_iden(char *);/*
 			      * Find max _ position
 			      * Get rid of seq identifier
+			      * used in OTU MAP parsed words
 			      */
-
+void rem_doub_quotes(char *);/*
+			      * Remove double quotes if present in string
+			      * Used in RDP parsed words
+			      */
 #endif
