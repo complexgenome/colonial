@@ -1,7 +1,7 @@
 #ifndef MICROB_H
 #define MICROB_H
 
-typedef struct{
+struct Microbiome{
   
   char *domain;
   char *phylum;
@@ -11,7 +11,7 @@ typedef struct{
   char *genus;
   char *species;
   
-}Microbiome;
+};
 
-void print_microb();
+void print_microb(struct Microbiome *);
 #endif
