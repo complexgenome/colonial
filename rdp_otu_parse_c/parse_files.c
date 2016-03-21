@@ -7,7 +7,8 @@
 /*
 Date 11 March 2016 
 */
-int parse_otu_map_file(const char *otu_file){
+struct Rep_seq * parse_otu_map_file(const char *otu_file){
+  //int parse_otu_map_file(const char *otu_file){
 
   char line[SIZE_BUFF]; /*store line*/  
   FILE *otu_handle=fopen(otu_file,"r");
@@ -22,12 +23,12 @@ int parse_otu_map_file(const char *otu_file){
     
     if(rep_seq_head ==NULL){
       printf("Cannot assign memory to rep seq head\n");
-      return 1;
+
     }
     while(fgets(line, sizeof(line), otu_handle)){
       trim_character('\n',line);/*get rid of '\n' char */
       
-      //      printf("Rep seq's value at beginning:%p %s %p\n",(void*)rep_seq_head,rep_seq_head->seq,(void*)rep_seq_head->next);
+      //printf("Rep seq's value at beginning:%p %s %p\n",(void*)rep_seq_head,rep_seq_head->seq,(void*)rep_seq_head->next);
       //printf("Rep seq s_count %p %p\n",(void*)rep_seq_head->sample_name_head,(void*)rep_seq_head->sample_name_head);
       
       tab_count=get_tab_count(line); /*get number of words/tab*/
@@ -37,7 +38,10 @@ int parse_otu_map_file(const char *otu_file){
       free_array(&split_array,tab_count);/*Free memory of split line*/
     }
     print_list(rep_seq_head);
+    printf("Address of head-node is %p\n",(void*)rep_seq_head);
     /*looping file ends*/
+    delete_rep_node(&rep_seq_head);
+    return rep_seq_head;
     fclose(otu_handle);/*close file*/
   }
   /*otu handle true*/
@@ -48,7 +52,8 @@ int parse_otu_map_file(const char *otu_file){
   }
   /*if for otu-handle ends*/
 
-  return 0;
+  return NULL;
+
 }
 /*Function ends for map file reading------------*/
 
@@ -88,8 +93,16 @@ char **array_of_str(char *line, unsigned int count){
      * keep only sample names. Get rid of seq identifier
      */
     array_words[i]=malloc(strlen(parsed_word)+1);//'\0' last place
-    strcpy(array_words[i++],parsed_word); //copy chracters. we need them outside scope
-    parsed_word=strtok(NULL,"\t");
+
+    if(array_words[i]!=NULL){
+      
+      strcpy(array_words[i++],parsed_word); //copy chracters. we need them outside scope
+      parsed_word=strtok(NULL,"\t");
+    }else{
+      printf("Cannot allocate memory\n");
+    }
+    
+
   }
   //while ends
   
@@ -163,6 +176,9 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
     if(i==0){
       /*add representative seq first*/
       loop_rep_seq->seq=malloc(strlen(temp_array[i])+1);
+      if(loop_rep_seq->seq ==NULL){
+	printf("Couldn't allocate memory to rep-seq name array\n");
+      }
       strcpy(loop_rep_seq->seq,temp_array[i]);
 
     }
@@ -175,12 +191,20 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
 	
 	/*If no sample name present in rep seq */
 	temp_sc=malloc(sizeof(struct Sample_name));
+	
+	if(temp_sc==NULL){
+	  printf("Couldn't allocate memory to temp_sc\n");
+	}
+	
 	temp_sc->next=NULL;
 	
 	temp_sc->name=malloc(strlen(temp_array[i])+1);
-	temp_sc->count=1;
-	strcpy(temp_sc->name,temp_array[i]);
+	if(temp_sc->name==NULL){
+	  printf("Couldn't allocate memory to sample name\n");
+	}
 	
+	temp_sc->count=1;//initialize by 1
+	strcpy(temp_sc->name,temp_array[i]);
 	loop_rep_seq->sample_name_head=temp_sc;
 	
       }
@@ -217,6 +241,10 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
 	    temp_sc->count=1;/*each sample is present atleast 1 if in array*/
 	    
 	    temp_sc->name=malloc(strlen(temp_array[i])+1);
+	    
+	    if(temp_sc->name ==NULL){
+	      printf("Couldn't allocate memory at sample found -1\n");
+	    }
 	    strcpy(temp_sc->name,temp_array[i]);
 
 	    loop_sc->next=temp_sc;/*append node*/
