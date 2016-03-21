@@ -31,11 +31,11 @@ struct Microbiome *parse_rdp_file(const char *rdp_file){
   else{
     while(fgets(line, sizeof(line), rdp_handle)){
       trim_character('\n',line);
-      
+      rem_extra_tab(line);
       tab_count=get_tab_count(line); /*get number of words/tab*/
-      printf("We have %s count %u\n",line,tab_count);
       split_array=array_of_str(line,tab_count+1);
       free_array(&split_array,tab_count);
+      
       
     }
     return head_microb;
@@ -119,9 +119,9 @@ char **array_of_str(char *line, unsigned int count){
     fprintf(stderr,"array of words didn't have memory\n");
   }
   parsed_word=strtok(line,"\t");
-
+  
   while(parsed_word!=NULL && i < count ){
-
+    
     rem_seq_iden(parsed_word);/*get rid of seq iden */
     /*
      * keep only sample names. Get rid of seq identifier
@@ -136,10 +136,9 @@ char **array_of_str(char *line, unsigned int count){
       fprintf(stderr,"Cannot allocate memory\n");
     }
     
-
   }
   //while ends
-  
+
   return array_words;
 }
 /*Function ends ----------------------------*/
@@ -321,3 +320,8 @@ void rem_seq_iden(char *temp_seq){
   /*trim string to its sample name!*/
 }
 /*function ends ----------------------------*/
+void rem_extra_tab(char *temp_string){
+  
+  printf("we've %s\n",temp_string);
+}
+/*Function ends-----------------------------*/
