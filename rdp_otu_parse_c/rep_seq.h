@@ -5,7 +5,7 @@
 
 struct Rep_seq{
   char *seq;
-  struct Sample_count *sample_count; /*link list for sample and 
+  struct Sample_name *sample_name_head; /*link list for sample and 
 			      *its count
 			      */
   struct Rep_seq *next;
