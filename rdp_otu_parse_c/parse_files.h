@@ -26,4 +26,5 @@ void rem_doub_quotes(char *);/*
 			      * Remove double quotes if present in string
 			      * Used in RDP parsed words
 			      */
+void rem_extra_tab(char *);
 #endif
