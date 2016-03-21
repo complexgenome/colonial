@@ -22,7 +22,7 @@ struct Rep_seq * parse_otu_map_file(const char *otu_file){
     rep_seq_head->next=NULL;
     
     if(rep_seq_head ==NULL){
-      printf("Cannot assign memory to rep seq head\n");
+      fprintf(stderr,"Erm! Cannot assign memory to rep seq head\n");
 
     }
     while(fgets(line, sizeof(line), otu_handle)){
@@ -37,10 +37,9 @@ struct Rep_seq * parse_otu_map_file(const char *otu_file){
       
       free_array(&split_array,tab_count);/*Free memory of split line*/
     }
-    print_list(rep_seq_head);
-    printf("Address of head-node is %p\n",(void*)rep_seq_head);
+
     /*looping file ends*/
-    delete_rep_node(&rep_seq_head);
+
     return rep_seq_head;
     fclose(otu_handle);/*close file*/
   }
@@ -49,10 +48,9 @@ struct Rep_seq * parse_otu_map_file(const char *otu_file){
   else{
     printf("Issues with OTU Map file\n");
     printf("Cannot do anything with otu-map. Bye!!\n");
+    return NULL;
   }
   /*if for otu-handle ends*/
-
-  return NULL;
 
 }
 /*Function ends for map file reading------------*/
@@ -65,16 +63,18 @@ void free_array(char ***array, unsigned int size){
   
   /* Free 2 D array of split strings
    */
-  char **temp_add=*array;
+  //char **temp_add=*array;
   
   for(unsigned int i=0;i<size;i++){
     /*Foor loop intial declarations in: C99, C11, or gnu99
      */
 
-    free(temp_add[i]);
+    free((*array)[i]);
+    //free(temp_add[i]);
   }
-  
-  free(temp_add);
+
+  free(*array);
+  //free(temp_add);
   *array=NULL;
 }
 /*Function ends-------------------------------------*/
@@ -84,11 +84,14 @@ char **array_of_str(char *line, unsigned int count){
   char *parsed_word;/*hold strtok output*/
   char **array_words=malloc(count*sizeof(char *)); /*2D array */
   
+  if(array_words == NULL){
+    fprintf(stderr,"array of words didn't have memory\n");
+  }
   parsed_word=strtok(line,"\t");
 
   while(parsed_word!=NULL && i < count ){
 
-    pos_underscore(parsed_word);
+    remove_seq_iden(parsed_word);/*get rid of seq iden */
     /*
      * keep only sample names. Get rid of seq identifier
      */
@@ -99,7 +102,7 @@ char **array_of_str(char *line, unsigned int count){
       strcpy(array_words[i++],parsed_word); //copy chracters. we need them outside scope
       parsed_word=strtok(NULL,"\t");
     }else{
-      printf("Cannot allocate memory\n");
+      fprintf(stderr,"Cannot allocate memory\n");
     }
     
 
@@ -160,7 +163,7 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
   
   /**/
   if(temp_rep_s==NULL ){
-    printf("Something went wrong in memory allocation\n");
+    fprintf(stderr,"Something went wrong in memory allocation\n");
   }
 
   
@@ -177,7 +180,7 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
       /*add representative seq first*/
       loop_rep_seq->seq=malloc(strlen(temp_array[i])+1);
       if(loop_rep_seq->seq ==NULL){
-	printf("Couldn't allocate memory to rep-seq name array\n");
+	fprintf(stderr,"Couldn't allocate memory to rep-seq name array\n");
       }
       strcpy(loop_rep_seq->seq,temp_array[i]);
 
@@ -193,14 +196,14 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
 	temp_sc=malloc(sizeof(struct Sample_name));
 	
 	if(temp_sc==NULL){
-	  printf("Couldn't allocate memory to temp_sc\n");
+	  fprintf(stderr,"Couldn't allocate memory to temp_sc\n");
 	}
 	
 	temp_sc->next=NULL;
 	
 	temp_sc->name=malloc(strlen(temp_array[i])+1);
 	if(temp_sc->name==NULL){
-	  printf("Couldn't allocate memory to sample name\n");
+	  fprintf(stderr,"Couldn't allocate memory to sample name\n");
 	}
 	
 	temp_sc->count=1;//initialize by 1
@@ -243,7 +246,7 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
 	    temp_sc->name=malloc(strlen(temp_array[i])+1);
 	    
 	    if(temp_sc->name ==NULL){
-	      printf("Couldn't allocate memory at sample found -1\n");
+	      fprintf(stderr,"Couldn't allocate memory at sample found -1\n");
 	    }
 	    strcpy(temp_sc->name,temp_array[i]);
 
@@ -264,8 +267,9 @@ void add_rep_node(struct Rep_seq *local,char **temp_array, unsigned int words){
 }
 /*Function ends ---------------------------*/
 
-void pos_underscore(char *temp_seq){
-  /*
+void remove_seq_iden(char *temp_seq){
+  
+  /*Get rid of seq identi information
    *Find max position of _ (an underscore)
    *Put '\0' at that position
    *the end result is sample name
