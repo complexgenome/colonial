@@ -3,8 +3,51 @@
 
 #include "rep_seq.h"
 
-//void delete_rep_node(struct Rep_seq *temp){}
+void delete_rep_node(struct Rep_seq **head_temp){
 
+  struct Rep_seq **temp_rs;
+  struct Sample_name **head_temp_sc;
+  struct Sample_name **sc_free_hold;
+
+  while((*head_temp)->next){
+    
+    printf("We have rep-seq as %s\n",(*head_temp)->seq);
+    
+    head_temp_sc=&((*head_temp)->sample_name_head);
+    while((*head_temp_sc)->next){
+      
+      sc_free_hold=&((*head_temp_sc)); /*temp hold*/
+      (*sc_free_hold)->count=9999; //poison
+
+      free((*sc_free_hold)->name); //free sample_name
+      free(*sc_free_hold); ///free sample name node
+      
+      *head_temp_sc=(*head_temp_sc)->next; //go to next
+    }
+    /*iterate over sample names*/
+
+    //last/first sample_name node
+    free((*head_temp_sc)->name); //free sample name node
+    free(*head_temp_sc); //free first/last sample name node 
+    (*head_temp_sc)=NULL;
+
+    
+    temp_rs=&((*head_temp)); //store temp
+    free((*temp_rs)->seq); //free rep seq memory
+    free(*temp_rs); //free rep-seq node
+    
+    *head_temp=(*head_temp)->next;
+    
+  }
+  /*iterate over rep-seq names*/
+  // last or first node
+  
+  free((*head_temp)->seq); //free rep-seq names
+  free(*head_temp); //free node
+  (*head_temp)=NULL; //set it to NULL
+  
+}
+/*Free function ends ----------------------------*/
 
 void print_list(struct Rep_seq *temp){
   if(temp!=NULL){
