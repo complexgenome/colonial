@@ -1,21 +1,15 @@
 #ifndef LOCAL_STRUCT_H
 #define LOCAL_STRUCT_H
 
-typedef struct{
-  char *val;
-  struct Dynamic_list *next;
-  struct Dynamic_list *previous;
-} Dynamic_list;
-/*linked list*/
 
-struct Sample_count{
+struct Sample_name{
 
   char *name;/*sample name*/
   unsigned int count;/*its count*/
-  struct Sample_count *next;
+  struct Sample_name *next;
 
 };
 /*samle and its count*/
 
-int size_dynamic_list();
+
 #endif
