@@ -2,7 +2,6 @@
 #include<stdio.h>
 
 #include "parse_files.h"
-
 #include "rep_seq.h"
 #include "microbiome.h"
 /*
@@ -31,9 +30,14 @@ struct Microbiome *parse_rdp_file(const char *rdp_file){
   else{
     while(fgets(line, sizeof(line), rdp_handle)){
       trim_character('\n',line);
+      printf("Before we have tabs as %u\n",get_tab_count(line));
+      
       rem_extra_tab(line);
+      printf("After we have tabs as %u\n",get_tab_count(line));
       tab_count=get_tab_count(line); /*get number of words/tab*/
+      
       split_array=array_of_str(line,tab_count+1);
+      
       free_array(&split_array,tab_count);
       
       
@@ -322,6 +326,20 @@ void rem_seq_iden(char *temp_seq){
 /*function ends ----------------------------*/
 void rem_extra_tab(char *temp_string){
   
-  printf("we've %s\n",temp_string);
+  unsigned int j=0;
+  char *temp;
+  while(*(temp_string+j)!='\0'){
+    if(*(temp_string+j)=='\t' && *(temp_string+j+1)=='\t'){
+      temp=temp_string+j+1;
+      while(*temp++){
+	*(temp-1)=*(temp);
+      }
+    }
+    else{
+      j++;
+    }
+  }
+  /*while loop ends*/
+  temp_string[j]='\0';
 }
 /*Function ends-----------------------------*/
