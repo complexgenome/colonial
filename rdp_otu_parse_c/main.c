@@ -3,7 +3,8 @@
 #include<unistd.h>
 
 #include "parse_files.h"
-
+#include "rep_seq.h"
+#include "microbiome.h"
 /*
 
 Sanjeev Sariya
@@ -56,13 +57,18 @@ int main(int argc, char * argv[]){
     }
     /*switch case ends*/
   }/*while ends*/
-  
-  //printf("RDP %s\n",rdp_file);
-  //printf ("Map file %s\n",map_file);
-  //printf("RUN name %s\n",run_name);
-  //  printf("Confidence used is %f\n",confid);
-  
-  parse_otu_map_file(map_file);
+    
+  struct Rep_seq *head_rep =parse_otu_map_file(map_file);
+  struct Microbiome *head_microb=parse_rdp_file(rdp_file);
+  if(head_rep!=NULL){
+    
+    print_list(head_rep);
+
+  }else{
+    printf("Memory issues to main rep-seq node\n");
+  }
+  delete_rep_node(&head_rep);
+
   return 0;
 }
 // main ends----------
