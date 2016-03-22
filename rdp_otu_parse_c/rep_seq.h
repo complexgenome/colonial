@@ -9,11 +9,10 @@ struct Rep_seq{
 			      *its count
 			      */
   struct Rep_seq *next;
-
 };
 
 void add_rep_node(struct Rep_seq *, char **,unsigned int );
 void print_list(struct Rep_seq *);
-void delete_rep_node(struct Rep_seq *);
+void delete_rep_node(struct Rep_seq **);
 #endif
 
