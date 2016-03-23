@@ -23,16 +23,16 @@ gcc -g -Wall -Wextra -pedantic *.c -o parse  -std=c99
 
 void print_help();
 
-int main(int argc, char * argv[]){
+int main(int argc, char *argv[]){
   
   if(argc == 1){
     print_help();
     return 0;/*EXIT*/
   }
   char get_opt;
-  const char* rdp_file=NULL; /*rdp file*/
-  const char* map_file=NULL; /*otu-map file*/
-  const char* run_name=NULL; /*output prefix file name*/
+  const char *rdp_file=NULL; /*rdp file*/
+  const char *map_file=NULL; /*otu-map file*/
+  const char *run_name=NULL; /*output prefix file name*/
   float confid=0.8; /*conf while parsing RDP output*/
 
   while((get_opt=getopt(argc, argv,"n:r:c:m:")) !=-1){
@@ -73,7 +73,7 @@ int main(int argc, char * argv[]){
 }
 // main ends----------
 void print_help(){
-
+  
   printf("parse -c <confidence> -r <rdp output> -n <run_name> -m <otu-map file>\n");
   printf("-c confidence threshold\n");
   printf("-r RDP file output\n");
