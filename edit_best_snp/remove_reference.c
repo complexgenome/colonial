@@ -1,0 +1,81 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>/*must for optarg*/
+#include<string.h>
+
+#define BUFF_SIZE 6000
+/*
+Date 23 march 2016
+Sanjeev Sariya
+Remove reference from NASP/gubbins generated 
+FASTA files
+
+gcc -g -Wall -Wextra -pedantic *.c -o remove_fasta 
+*/
+
+void print_help();
+
+int main(int argc, char *argv[]){
+  char get_opt;/*loop over args*/
+  char *fasta_file=NULL;
+  FILE *fasta_handle;/*hold fasta file pointer*/
+  char line[BUFF_SIZE]; /*store line*/
+  unsigned int found=0; /*var to store if reference found*/
+  
+  if(argc ==1){
+    print_help();
+    return 0;
+    
+  }
+  
+  while((get_opt=getopt(argc, argv,"f:")) !=-1){
+    switch(get_opt){
+    case 'f':
+      fasta_file=optarg;
+      break;
+    case '?':
+      print_help();
+      break;
+    }
+    /*switch ends*/
+  }
+  /*while ends*/
+
+  fasta_handle=fopen(fasta_file,"r");
+  
+  if(fasta_handle== NULL){
+    fprintf(stderr,"Incorrect FASTA file\n");
+  }
+  
+  while(fgets(line,sizeof(line),fasta_handle)){
+    
+    if(line[0]=='>'){
+      
+      if(strcmp(line,">Reference\n")!=0){
+	found=0;
+	printf("%s",line);
+      }
+      else{
+	found=1;
+      }
+      /*Reference compare*/
+      
+    }
+    else{
+      if(found==0){
+	printf("%s",line);
+      }
+    }
+  }
+  /*while loop ends*/
+  
+  fclose(fasta_handle);
+  
+  return 0;
+}
+void print_help(){
+  const char* help="Run as:\n"\
+ "./program -f fasta_file";
+
+  printf("%s\n",help);
+}
