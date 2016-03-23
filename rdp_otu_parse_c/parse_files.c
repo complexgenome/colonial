@@ -29,19 +29,19 @@ struct Microbiome *parse_rdp_file(const char *rdp_file){
   }
   else{
     while(fgets(line, sizeof(line), rdp_handle)){
-      trim_character('\n',line);
-      printf("Before we have tabs as %u\n",get_tab_count(line));
       
-      rem_extra_tab(line);
-      printf("After we have tabs as %u\n",get_tab_count(line));
+      trim_character('\n',line);/*remove new line char*/      
+      rem_extra_tab(line); /*remove extra tabs*/
       tab_count=get_tab_count(line); /*get number of words/tab*/
-      
+    
       split_array=array_of_str(line,tab_count+1);
       
       free_array(&split_array,tab_count);
       
       
     }
+    /*while loop ends*/
+    fclose(rdp_handle);/*close file*/
     return head_microb;
   }
 
@@ -77,8 +77,8 @@ struct Rep_seq * parse_otu_map_file(const char *otu_file){
 
     /*looping file ends*/
 
-    return rep_seq_head;
     fclose(otu_handle);/*close file*/
+    return rep_seq_head;
   }
   /*otu handle true*/
   
