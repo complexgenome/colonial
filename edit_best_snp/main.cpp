@@ -7,6 +7,7 @@
 This program remove weird strings from fasta file 
 generated using nasp
 This program is called from the bash script present in this directory
+Also, removes Reference sequence from bestsnp.fasta
 
 */
 /*
@@ -25,8 +26,10 @@ int main(int argc, char *argv[]){
   
   if(argc!=3){
     print_usage();
+    return 1;
   }
-
+  
+  bool found=0;
   bool present=0;
   char *file_fasta=NULL;
   char get_opt;
@@ -44,7 +47,7 @@ int main(int argc, char *argv[]){
   }
   
   file_fasta=realpath(file_fasta,NULL);
-  present=FileExists(file_fasta);  
+  present=FileExists(file_fasta);  /*if file exists*/
   
   if(present){
     
@@ -56,19 +59,28 @@ int main(int argc, char *argv[]){
       {
 	if(line.find('>')!=std::string::npos){
 	  
+	  if(line.find("Reference")!=std::string::npos){ /*if reference seq identifer*/
+	    found=1;
+	  }
+	  
 	  if(line.find(chop_line) != std::string::npos){
+	    /*if not sequence identifier*/
 	    
+	    found=0;
 	    std::cout<<line.substr(0,line.length()-chop_line.length()) << '\n' ;
 	  } //reference check ends
 	  
-	  else{
-	    std::cout<< line << '\n'; //print refernce header
-	  }
-	} // ">" if ends
+	  //else{	    //std::cout<< line << '\n'; //print reference header	    //}
+	  
+	}
+	/* check for ">" if ends*/
 	
 	else{
-	  
-	  std::cout<<line<< '\n';
+	  if(found==0){
+	    /*print only non reference's sequence*/
+	    std::cout<<line<< '\n'; 
+	  }
+
 	}
 	
       }//while ends
