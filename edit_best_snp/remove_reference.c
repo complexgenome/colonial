@@ -10,12 +10,15 @@ Sanjeev Sariya
 Remove reference from NASP/gubbins generated 
 FASTA files
 
-gcc -g -Wall -Wextra -pedantic *.c -o remove_fasta 
+gcc -g -Wall -Wextra -pedantic *.c -std=gnu99 -o clean_seq_iden
+
 */
 
 void print_help();
+int get_position(char *);
 
 int main(int argc, char *argv[]){
+  int pos;
   char get_opt;/*loop over args*/
   char *fasta_file=NULL;
   FILE *fasta_handle;/*hold fasta file pointer*/
@@ -52,10 +55,30 @@ int main(int argc, char *argv[]){
     if(line[0]=='>'){
       
       if(strcmp(line,">Reference\n")!=0){
+
+	pos=get_position(line);/*get position of _bcode*/
+	
 	found=0;
-	printf("%s",line);
+	if(pos>0){
+	  
+	  for(int i=0;i<pos;i++){
+	    printf("%c",line[i]);
+	  }
+	  printf("\n");
+	  pos=-1;
+	  /*print done until that index*/
+	}
+	
+	else{
+	  /*if some issues*/
+	
+	  fprintf(stderr,"Having issues with %s",line);
+	  exit(-1);
+	}
+
       }
       else{
+	
 	found=1;
       }
       /*Reference compare*/
@@ -78,4 +101,13 @@ void print_help(){
  "./program -f fasta_file";
 
   printf("%s\n",help);
+}
+/*Function over---------------------*/
+int get_position(char *line){
+  
+  /*char *sub_str=strstr(line,"_bcode");*/
+  int pos;
+  pos= strstr(line,"_bcode")-line;
+ 
+  return (pos>0) ? pos : -1;
 }
