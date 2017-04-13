@@ -13,14 +13,12 @@ get_fastq_files(){ # get reverse and foward strand of sample isoltae
     trim_reverse="" # variables to store trim reads, if available
 
     regex_for='(\_L00[0-9]+)?\_R1+(\_00[1-9])?(\_trimmed)?\.fastq\.gz$' # updated on Apr 24 to have ST131 data. which do not have L001 format
-    #regex_for='\_L00[0-9]+\_R1+(\_001)?\.fastq\.gz$'
 
     regex_rev='(\_L00[0-9]+)?\_R2+(\_00[1-9])?(\_trimmed)?\.fastq\.gz$' 
-    #regex_rev='\_L00[0-9]+\_R2+(\_001)?\.fastq\.gz$' 
+
 
     #updated find on 24th April to search symlinks.
     array_name=($(find -L $sample_direc -name "*$1*" 2>/dev/null)) # store find files in an array --
-#    array_name=($(find $sample_direc -type f -name "*$1*" 2>/dev/null)) # store find files in an array --
 
     if [ ${#array_name[@]} -gt 2 ] 
     then
@@ -46,8 +44,7 @@ get_fastq_files(){ # get reverse and foward strand of sample isoltae
 			forward_read=$file
 		    fi
 
-	        #else # if it has R2 -- this got updated.. because it was failing on isolate names.. 
-		elif [[ "`basename $file`" =~ $regex_rev ]]
+		elif [[ "`basename $file`" =~ $regex_rev ]]  #else # if it has R2 -- this got updated.. because it was failing on isolate names..   
 		then
 
 		    if [[ "`basename $file`" == *"trimmed"*  ]] 
@@ -173,7 +170,7 @@ usage() {   #spit out the usage
 cat <<UsageDisplay
 #################################################
 
-assembly_pipeline.sh [-t threads]  -s <count/sum for tasks> -i <isolate_file> -o <output_Directory> -d <isolate directory> -a <illumina_adapter_file> [ -c coverage_contigs]
+assembly_pipeline.sh -s <count/sum for tasks> -i <isolate_file> -o <output_Directory> -d <isolate directory> -a <illumina_adapter_file>
 Default threads 16
 Default coverage is auto for SPAdes run. Default for scaffolds is 0 and above.
 
@@ -185,13 +182,8 @@ Options:
 -s tell what to do to the script.. 
    -s 4 will only assemble your reads
    -s 3 will only Sequence type your reads .. after trimming your data. 
-   -s 2 will ONLY sequence type your reads using assembled genome .. assuming your reads have been assembled..
    -s 7 will assemble your reads and Seqeunce type them using SRST2 tool
-   -s 6 will assemble your reads and BLAST sequence type them. 
-   -s 9 will assemble your readsm BLAST sequence type and SRST2 sequence type them.. 
-Advanced Options:
--t threads count 
--c coverge of contigs. This would be K-mer coverage. 
+
 #################################################
 
 UsageDisplay
@@ -212,12 +204,12 @@ forward_read="" # there was a bug.. if all variables in one line and not sepeart
 reverse_read="" 
 out_dir=""  # output directory -- 
 adap_file="" # illumina adapter_file used for trimomatic
-num_threads="" # for trimmomatic/SPAdes, QUAST
-def_threads=16
+num_threads=16 # for trimmomatic/SPAdes, QUAST
+#def_threads=16
 tasks=""
 ## -- 
 
-while getopts "s:c:d:i:a:t:o:h" args # iterate over arguments
+while getopts "s:d:i:a:o:h" args # iterate over arguments
 do
     case $args in
 	d) 
@@ -226,23 +218,20 @@ do
 	    isolate_file=$OPTARG ;; # store isolate file
 	a)
 	    adap_file=$OPTARG ;; # adapter file 
-	t)
-	    num_threads=$OPTARG ;;# number of threads
+
 	o)
 	    out_dir=$OPTARG ;; # output directory
-	c)
-	    coverage=$OPTARG ;; # coverage 
+
 	s) 
 	    tasks=$OPTARG ;; # count tells what to do.. assembly, sequence type or both.
             # if 4 then only assembly.. if 3 then only SRST MLST sequence typing.. 2 only BLAST sequence typing.. 
             #if sum is 4 then only assembly 
             # if.. sum is 7 do assembly + srst sequece typing..  if 6 then, BLAST+ ASSEMBLY.. if 9 then assembly+SRST2+BLAST
 	h) 
-	    # help
-	    usage ;;
+	    usage ;; 	    # help
 	*) 
-	    # any other flag which is not an option
-	    usage ;;
+
+	    usage ;; 	    # any other flag which is not an option
 
     esac # done with case loop
 done # completed while loop
@@ -252,12 +241,9 @@ then
     usage;
 fi
 
-if [[ $num_threads -eq 0 ]]; # if no threads provided
-then   
-    num_threads=$def_threads
-fi 
-
-# ----          --     ----                   --                      Check parameter   --  -----          --------------------------        -  #
+################# 
+#Check parameter#
+#################
 
 if [ "$tasks" == "" ] 
 then
@@ -280,11 +266,10 @@ script_dir=`dirname $0`
 
 check_files; # check files
 check_dir;  # check directories
-check_coverage; # check coverage ..
 check_info_node; # check if node_info.txt i present in current directoy.. exit if present 
 create_directs; # create directories to have organized data 
 
-# -- ----           -----          ---            ----         Loop over isolate list provided  --- -- -- -- -- ---   --- -- -- -- -- -- -- --    #
+# -- ----     Loop over isolate list provided  --- -- -- -- -- ---   --- -- -- -- -- -- -- --    #
 
 total_isolates=0 #total isolates found in file provided 
 isolates_found=0  # total isolates which have both forward and reverse reads  
@@ -321,25 +306,10 @@ do
 	   
 	    job_id=$(sbatch  $script_dir/automate_process.sh -f $forward_link -r $reverse_link -t $num_threads -o $out_dir/$i -a $adap_file -c $coverage  -s $tasks -w $script_dir | awk '{print $4}')
 
-            #bash $script_dir/automate_process.sh -f $forward_link -r $reverse_link -t $num_threads -o $out_dir/$i -a $adap_file -c $coverage -s $tasks -w $script_dir
-
+#	    bash $script_dir/automate_process.sh -f $forward_link -r $reverse_link -t $num_threads -o $out_dir/$i -a $adap_file -c $coverage  -s $tasks -w $script_dir 
 	    printf "$i submitted for assembly to $job_id\n"  >> $curr_dir/"assem_job_ids.txt"
 	    max_job_ID=$job_id
 
-#COMMENTED on JUne 10
-	   # if [[ "$tasks" -eq 7 ]] || [[ "$tasks" -eq 4 ]] # throw jobs of coverage only if assembly to be done
-	    #then
-	#	job_id=$(sbatch --dependency=afterok:$job_id  $script_dir/coverage_assembly.py -r $forward_link -s $out_dir/$i/"scaffolds.fasta" -o $out_dir/$i -c $coverage | awk '{print $4}' ) 
-                #scaffolds file for coverage calculation 
-                #python coverage_assembly.py -r $forward_link -s $out_dir/$i/"scaffolds.fasta" -o $out_dir/$i -c $coverage
-	#	printf "$i has python coverage script at job $job_id\n" >> $curr_dir/"cov_job_ids.txt"
-	#	job_id=$(sbatch --dependency=afterok:$job_id $script_dir/copy_fasta_files.sh -a $out_dir/$i -i $i -o $out_dir | awk '{print $4}')
-	#	printf "$i submitted for copying contigs, scaffolds and info coverage files at job $job_id\n" >> $curr_dir/"copy_job_ids.txt"
-                #submit another job to copy contigs and scaffold fasta file.. 
-	 #   fi # if assembly or assembly + sequence typing .. 
-## Commented on June 10
-
-	    max_job_ID=$job_id
 	    unset forward_link reverse_link job_id
 	else
 	    printf "$i doesn't have forward or reverse read\n" >> $curr_dir/"logs_errors.txt"
@@ -355,9 +325,8 @@ printf "Isolates with forward and reverse reads are $isolates_found\n"  >> $curr
 printf "Highest job id is $max_job_ID\n" >> $curr_dir/"logs_errors.txt"
 printf "<--Done looping over isolates-->\n"  >> $curr_dir/"logs_errors.txt"
 
-#printf "Please check "$curr_dir"/"copy_job_ids.txt" for copy submitted jobs and other information\n"
+
 printf "Please check "$curr_dir"/"assem_job_ids.txt" for assembly submitted jobs and other information\n"
-#printf "Please check "$curr_dir"/"cov_job_ids.txt" for coverage submitted jobs and other information\n"
 printf "please check "$curr_dir"/"logs_errors.txt" for error logs (not necessarily to be present)\n"
 
 printf "<-Thank you for using this pipeline. TADA! \n->"

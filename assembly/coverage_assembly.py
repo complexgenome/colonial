@@ -55,7 +55,13 @@ def get_kmer(read_file):
     folder_list=glob.glob(os.path.join(read_dir,'K*'))
 
     for k in folder_list:
-        kmer_values.append(int(os.path.basename(k)[1:]))
+        
+        if os.path.isdir(k):
+            """
+            It started taking in Klebselilla files ..Added this test on Feb 24 2016
+            """
+            
+            kmer_values.append(int(os.path.basename(k)[1:]))
         # K21, K33, K55 -> get only value after K, convert them into intger and add that to array
 
     print "Max value is ",max(kmer_values)
